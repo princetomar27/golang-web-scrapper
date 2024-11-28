@@ -3,9 +3,24 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 )
 
+func respondWithError(w http.ResponseWriter, code int, message string){
+	// if status code is >= 500
+	if(code >= 500){
+		log.Printf("Got 5XX error: %v", message)
+	} 
+
+	type errResponse struct{
+		Error string `json:"error"`
+	}
+
+	respondWithJson(w,code, errResponse{
+		Error: message,
+	})
+}
 
 func respondWithJson(w http.ResponseWriter, code int, payload interface{}){
 
