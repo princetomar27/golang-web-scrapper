@@ -6,11 +6,16 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/princetomar27/golang_web_scrapper/rss/internal/database"
 	"github.com/rs/cors"
 
 	"github.com/go-chi/chi"
 	"github.com/joho/godotenv"
 )
+
+type apiConfig struct{
+	DB *database.Queries
+}
 
 func main(){ go
 	fmt.Println("Hey Prince")
@@ -38,7 +43,7 @@ func main(){ go
 	router.Use(c.Handler)
 
 	v1Router := chi.NewRouter()
-	v1Router.HandleFunc("/healthz", handlerReadiness)
+	v1Router.HandleFunc("/ready", handlerReadiness)
 	v1Router.Get("/err", handleError)
 
 	router.Mount("/v1", v1Router)
