@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -11,6 +12,8 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/joho/godotenv"
+
+	_ "github.com/lib/pq"
 )
 
 type apiConfig struct{
@@ -26,6 +29,22 @@ func main(){ go
 	if portString == ""{
 		log.Fatal("Empty port string!")
 	}
+
+	dbURL := os.Getenv("DB_URL")
+	if dbURL == ""{
+		log.Fatal("Empty DB_URL!")
+	}
+
+	conn, err := sql.Open("postgres",dbURL)
+	if err != nil{
+		log.Fatal("Error connecting to database", err)
+	}
+ 
+	apiCfg := apiConfig{
+		DB: database.New(conn) ,
+	}
+	 
+
 	fmt.Println("Port: ", portString)
 
 	router := chi.NewRouter()
@@ -45,6 +64,9 @@ func main(){ go
 	v1Router := chi.NewRouter()
 	v1Router.HandleFunc("/ready", handlerReadiness)
 	v1Router.Get("/err", handleError)
+	v1Router.Post("/users",apiCfg.handlerCreateUser)
+	v1Router.Get("/user", apiCfg.handleGetUserByAPIKey)
+	v1Router.Get("/users", apiCfg.handleGetAllUsers)
 
 	router.Mount("/v1", v1Router)
 
